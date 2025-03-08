@@ -10,7 +10,13 @@ class FakeStoreApiService implements ProductInterface
 {
     public function addProduct(array $productData): Response
     {
-        $response = Http::post('https://fakestoreapi.com/products', $productData);
+        $response = Http::post('https://fakestoreapi.com/products', [
+            'title' => $productData['name'],
+            'price' => $productData['price'],
+            'description' => $productData['description'],
+            'category' => "electronics", // Set category dynamically if needed
+            'image' => $productData['image'] // Pass URL instead of file
+        ]);
         return response($response->body(), $response->status());
     }
 

@@ -16,6 +16,7 @@ services:
       - ./:/var/www
     depends_on:
       - db
+      - ftp
     networks:
       - laravel_network
 
@@ -57,14 +58,32 @@ services:
       - 8000:80
     volumes:
       - ./:/var/www
-      - ./docker-compose/nginx:/etc/nginx/conf.d/
+      - ./docker-compose/nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - app
     networks:
       - laravel_network
 
+  ftp:
+    image: stilliard/pure-ftpd
+    container_name: laravel_ftp_container
+    restart: always
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      PUBLICHOST: "localhost"
+      FTP_USER_NAME: "ftpuser"
+      FTP_USER_PASS: "ftppassword"
+      FTP_USER_HOME: "/home/ftpuser"
+    volumes:
+      - ftp_data:/home/ftpuser
+    networks:
+      - laravel_network
+
 volumes:
   db_data:
+  ftp_data:
 
 networks:
   laravel_network:

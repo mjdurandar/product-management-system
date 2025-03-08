@@ -32,13 +32,14 @@ return [
 
         'ftp' => [
             'driver'   => 'ftp',
-            'host'     => env('FTP_HOST'),
-            'username' => env('FTP_USERNAME'),
-            'password' => env('FTP_PASSWORD'),
-            'root'     => env('FTP_ROOT', ''),  // Change root directory if needed
+            'host'     => env('FTP_HOST', 'laravel_ftp_container'),
+            'username' => env('FTP_USERNAME', 'ftpuser'),
+            'password' => env('FTP_PASSWORD', 'ftppassword'),
             'port'     => env('FTP_PORT', 21),
+            'root'     => env('FTP_ROOT', '/home/ftpuser'),
             'passive'  => true,
             'ssl'      => false,
+            'timeout'  => 30,
         ],
 
         'local' => [

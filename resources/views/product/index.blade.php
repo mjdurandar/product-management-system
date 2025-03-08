@@ -65,21 +65,20 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    fetch("{{ route('categories') }}") // Use Laravel's route helper
+    fetch("{{ route('categories') }}") 
       .then(response => response.json())
       .then(data => {
           let categorySelect = document.getElementById('categorySelect');
-          categorySelect.innerHTML = '<option value="">Select a category</option>'; // Reset options
+          categorySelect.innerHTML = '<option value="">Select a category</option>';
           data.forEach(category => {
               let option = document.createElement('option');
               option.value = category.id; 
-              option.textContent = category.name || category; // Platzi uses `name`, FakeStore returns plain text
+              option.textContent = category.name || category; 
               categorySelect.appendChild(option);
           });
       })
       .catch(error => console.error('Error fetching categories:', error));
   });
 </script>
-
 
 </x-app-layout>
