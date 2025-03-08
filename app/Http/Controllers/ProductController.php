@@ -15,6 +15,11 @@ class ProductController extends Controller
         $this->productService = $productService;
     }
 
+    public function index()
+    {
+      return view('product.index');
+    }
+
     public function addProduct(Request $request)
     {
         $request->validate([

@@ -8,9 +8,6 @@
     <div class="py-6">
         <div class="container">
             <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">User Management</h3>
-                </div>
                 <div class="card-body">
                     <table class="table table-striped">
                         <thead>
@@ -26,7 +23,7 @@
                                 <tr>
                                     <td>{{ $user->name }}</td>
                                     <td>{{ $user->email }}</td>
-                                    <td>{{ $user->role == 0 ? 'Customer' : 'Admin' }}</td>
+                                    <td>{{ $user->role == 'user' ? 'User' : 'Admin' }}</td>
                                     <td>
                                         <button onclick="openEditModal({{ $user->id }}, '{{ $user->role }}')" class="btn btn-primary">Edit</button>
                                         <button onclick="deleteRole({{ $user->id }})" class="btn btn-danger">Delete</button>
@@ -55,8 +52,8 @@
                         <div class="form-group">
                             <label for="roleSelect">Role</label>
                             <select class="form-control" id="roleSelect">
-                                <option value="0">Customer</option>
-                                <option value="1">Admin</option>
+                                <option value="user">User</option>
+                                <option value="admin">Admin</option>
                             </select>
                         </div>
                         <input type="hidden" id="editUserId">
@@ -81,11 +78,11 @@
             const userId = document.getElementById('editUserId').value;
             const newRole = document.getElementById('roleSelect').value;
 
-            fetch(`/users/${userId}`, {
-                method: 'PATCH', // or 'PUT' based on your Laravel route
+            fetch(`/user/${userId}`, {
+                method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Ensure CSRF protection
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ role: newRole })
             })
@@ -94,12 +91,13 @@
                 if (data.success) {
                     Swal.fire('Saved!', data.success, 'success');
                     $('#editRoleModal').modal('hide');
-                    location.reload(); // Reload the page to reflect the changes
+                    location.reload(); 
                 } else {
                     Swal.fire('Error!', 'Failed to update role.', 'error');
                 }
             })
             .catch(error => {
+                console.error('Error:', error);
                 Swal.fire('Error!', 'There was an error updating the role.', 'error');
             });
         }
@@ -114,7 +112,6 @@
                 cancelButtonText: 'No, cancel!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Implement the logic to delete the role
                     Swal.fire('Deleted!', 'The user role has been deleted.', 'success');
                 }
             });
