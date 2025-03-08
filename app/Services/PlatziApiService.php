@@ -7,7 +7,13 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Http;
 
 class PlatziApiService implements ProductInterface
-{
+{   
+    public function getProducts(): Response
+    {
+        $response = Http::get('https://api.escuelajs.co/api/v1/products'); // Fetch products
+        return response($response->body(), $response->status());
+    }
+
     public function addProduct(array $productData): Response
     {   
       $response = Http::post('https://api.escuelajs.co/api/v1/products/', [

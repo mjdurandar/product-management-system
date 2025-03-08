@@ -18,11 +18,21 @@ class ProductController extends Controller
 
     public function index()
     {
-      return view('product.index');
+      $products = json_decode($this->productService->getProducts()->getContent()); 
+      return view('product.index', compact('products'));
     }
 
     public function store(Request $request)
     {   
+      // Test FTP connection by uploading a simple text file
+    $success = Storage::disk('ftp')->put('test-upload.txt', 'Hello FTP!');
+
+    // Check if the file was uploaded successfully
+    if ($success) {
+        return response()->json(['message' => 'FTP upload successful!']);
+    } else {
+        return response()->json(['error' => 'FTP upload failed!'], 500);
+    }
       $request->validate([
           'name' => 'required|unique:products,name',
           'price' => 'required|numeric',
@@ -31,13 +41,12 @@ class ProductController extends Controller
       ]);
 
       $productData = $request->only(['name', 'price', 'description']);
-
       // 🖼️ Upload Image to FTP and get URL
       if ($request->hasFile('images')) {
           $imagePath = $request->file('images')->store('products', 'ftp'); 
           $productData['image'] = Storage::disk('ftp')->url($imagePath);  // Get FTP URL
       }
-    
+      
       return $this->productService->addProduct($productData);
     }
 }

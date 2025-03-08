@@ -35,7 +35,7 @@ return [
             'host'     => env('FTP_HOST', 'laravel_ftp_container'),
             'username' => env('FTP_USERNAME', 'ftpuser'),
             'password' => env('FTP_PASSWORD', 'ftppassword'),
-            'port'     => env('FTP_PORT', 21),
+            'port'     => (int) env('FTP_PORT', 21),
             'root'     => env('FTP_ROOT', '/home/ftpuser'),
             'passive'  => true,
             'ssl'      => false,
@@ -44,7 +44,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            'root' => storage_path('app'),
             'serve' => true,
             'throw' => false,
             'report' => false,
