@@ -14,6 +14,7 @@ Route::get('/dashboard', function () {
 Route::middleware('auth')->group(function () {
     // USER CONTROLLER
     Route::get('/users', [App\Http\Controllers\UserController::class, 'index'])->name('user.index');
+    Route::patch('/users/{id}', [App\Http\Controllers\UserController::class, 'update'])->name('user.update');
 
     // BUILT IN PROFILE CONTROLLER FROM LARAVEL BREEZE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

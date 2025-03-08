@@ -80,9 +80,28 @@
         function saveRole() {
             const userId = document.getElementById('editUserId').value;
             const newRole = document.getElementById('roleSelect').value;
-            // Implement the logic to update the role
-            Swal.fire('Saved!', 'The user role has been updated.', 'success');
-            $('#editRoleModal').modal('hide');
+
+            fetch(`/users/${userId}`, {
+                method: 'PATCH', // or 'PUT' based on your Laravel route
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}' // Ensure CSRF protection
+                },
+                body: JSON.stringify({ role: newRole })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Saved!', data.success, 'success');
+                    $('#editRoleModal').modal('hide');
+                    location.reload(); // Reload the page to reflect the changes
+                } else {
+                    Swal.fire('Error!', 'Failed to update role.', 'error');
+                }
+            })
+            .catch(error => {
+                Swal.fire('Error!', 'There was an error updating the role.', 'error');
+            });
         }
 
         function deleteRole(userId) {
