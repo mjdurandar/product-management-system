@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProductController;
 
 Route::get('/', function () {
     return redirect('login');
@@ -10,6 +11,12 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/add-product', function () {
+    return view('add-product');
+})->name('products.add');
+
+Route::post('/add-product', [ProductController::class, 'addProduct']);
 
 Route::middleware('auth')->group(function () {
     // USER CONTROLLER

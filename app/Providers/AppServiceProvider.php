@@ -3,20 +3,21 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Interfaces\ProductInterface;
+use App\Services\FakeStoreApiService;
+use App\Services\PlatziApiService;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->bind(ProductInterface::class, function ($app) {
+            // Switch between FakeStoreApiService and PlatziApiService as needed
+            // return new FakeStoreApiService();
+            return new PlatziApiService();
+        });
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //
