@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ApiCategoriesController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
@@ -27,6 +28,10 @@ Route::middleware(['auth', CheckAdmin::class . ':admin,user'])->group(function (
 Route::middleware(['auth', CheckAdmin::class . ':admin'])->group(function () {
   // PRODUCT CONTROLLER
   Route::get('/product', [ProductController::class, 'index'])->name('product.index');
+  Route::post('/product', [ProductController::class, 'store'])->name('product.store');
+
+  // CATEGORY CONTROLLER
+  Route::get('/categories', [ApiCategoriesController::class, 'index'])->name('categories');
 });
 
 require __DIR__.'/auth.php';

@@ -7,4 +7,5 @@ use Illuminate\Http\Response;
 interface ProductInterface
 {
     public function addProduct(array $productData): Response;
+    public function getCategories(): Response;
 }

@@ -30,6 +30,17 @@ return [
 
     'disks' => [
 
+        'ftp' => [
+            'driver'   => 'ftp',
+            'host'     => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'root'     => env('FTP_ROOT', ''),  // Change root directory if needed
+            'port'     => env('FTP_PORT', 21),
+            'passive'  => true,
+            'ssl'      => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

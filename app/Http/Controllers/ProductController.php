@@ -20,8 +20,9 @@ class ProductController extends Controller
       return view('product.index');
     }
 
-    public function addProduct(Request $request)
-    {
+    public function store(Request $request)
+    {   
+        dd($request->all());
         $request->validate([
             'name' => 'required|unique:products,name',
             'price' => 'required|numeric',
@@ -30,16 +31,7 @@ class ProductController extends Controller
         ]);
 
         $productData = $request->only(['name', 'price', 'description', 'images']);
-        // ... other product data ...
-
-      //     "title" => "New Prsssoduct",
-      //     "price" => 99,
-      //     "description" => "An awesome product!",
-      //     "images" => ["https://via.placeholder.com/150"], // Must be an array
-      //     "categoryId" => 1 // Required category ID
-      // ];
     
-
         return $this->productService->addProduct($productData);
     }
 }
