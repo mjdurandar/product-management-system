@@ -245,6 +245,7 @@
                         <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-bold">$${product.price}</span>
+                            <div>
                             <button class="btn btn-primary btn-sm edit-product" 
                                 data-id="${product.id}" 
                                 data-title="${product.title}" 
@@ -253,6 +254,7 @@
                                 data-image="${product.image ?? (product.images?.[0] ?? '')}" 
                                 data-category="${product.category ? (Array.isArray(product.category) ? product.category[0].id : product.category) : ''}">Edit</button>
                             <button class="btn btn-danger btn-sm">Delete</button>
+                            </div>
                         </div>
                     </div>
                 </div>
