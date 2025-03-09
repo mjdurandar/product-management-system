@@ -158,17 +158,41 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
+    // Add event listener for modal open
+    $('#productModal').on('show.bs.modal', function () {
+        fetchCategories();
+    });
+
+    // Add event listener for edit modal open
+    $('#editProductModal').on('show.bs.modal', function () {
+        fetchCategories();
+    });
+
     const fetchCategories = () => {
         fetch("{{ route('categories') }}") 
             .then(response => response.json())
             .then(data => {
+                // Update Add Product modal dropdown
                 let categorySelect = document.getElementById('categorySelect');
+                let editCategorySelect = document.getElementById('edit_category');
+                
+                // Clear both dropdowns
                 categorySelect.innerHTML = '<option value="">Select a category</option>';
+                editCategorySelect.innerHTML = '<option value="">Select a category</option>';
+                
+                // Add categories to both dropdowns
                 data.forEach(category => {
+                    // For Add Product modal
                     let option = document.createElement('option');
                     option.value = category.id; 
                     option.textContent = category.name || category; 
                     categorySelect.appendChild(option);
+                    
+                    // For Edit Product modal
+                    let editOption = document.createElement('option');
+                    editOption.value = category.id;
+                    editOption.textContent = category.name || category;
+                    editCategorySelect.appendChild(editOption);
                 });
             })
             .catch(error => console.error('Error fetching categories:', error));
