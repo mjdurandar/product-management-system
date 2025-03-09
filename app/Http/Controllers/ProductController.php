@@ -11,6 +11,7 @@ use App\Services\FakeStoreApiService;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
@@ -97,14 +98,25 @@ class ProductController extends Controller
             'title' => 'required|string',
             'price' => 'required|numeric',
             'description' => 'required|string',
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         try {
-            // Get the data that will be updated
-            $updateData = $request->only(['title', 'price', 'description']);
+            $updateData = $request->only(['title', 'price', 'description', 'categoryId']);
             
-            // Convert price to float
-            $updateData['price'] = (float) $updateData['price'];
+            // Handle image upload if provided
+            if ($request->hasFile('images')) {
+                // Store the image locally
+                foreach ($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    // For now, use a placeholder image URL that the API will accept
+                    $updateData['images'] = [
+                        'https://i.imgur.com/ZANVnHE.jpeg',
+                        'https://i.imgur.com/QkIa5tT.jpeg',
+                        'https://i.imgur.com/YyUxEjY.jpeg'
+                    ];
+                }
+            }
 
             // Get the selected API
             $selectedApi = session('selected_api', 'platzi');
@@ -113,6 +125,12 @@ class ProductController extends Controller
             if ($selectedApi === 'fakestore' && $request->has('category')) {
                 $updateData['category'] = $request->input('category');
             }
+
+            // Log the request data
+            Log::info('Updating product with data', [
+                'product_id' => $id,
+                'request_data' => $updateData
+            ]);
 
             // Make the API call
             $response = $this->productService->updateProduct($id, $updateData);
@@ -124,6 +142,11 @@ class ProductController extends Controller
             return response()->json(json_decode($response->getContent(), true));
 
         } catch (\Exception $e) {
+            Log::error('Error updating product', [
+                'error' => $e->getMessage(),
+                'data' => $request->all()
+            ]);
+
             return response()->json([
                 'error' => 'Failed to update product',
                 'message' => $e->getMessage()
