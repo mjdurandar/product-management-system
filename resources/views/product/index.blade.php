@@ -208,6 +208,61 @@
     };
 
     const apiSelector = document.getElementById('apiSelector');
+    
+    // Function to attach edit button event listeners
+    function attachEditButtonListeners() {
+        document.querySelectorAll('.edit-product').forEach(button => {
+            // Remove existing listener to prevent duplicates
+            button.removeEventListener('click', handleEditButtonClick);
+            // Add new listener
+            button.addEventListener('click', handleEditButtonClick);
+        });
+    }
+
+    // Handler function for edit button clicks
+    function handleEditButtonClick() {
+        const modal = document.getElementById('editProductModal');
+        const form = document.getElementById('editProductForm');
+        const productId = this.dataset.id;
+        
+        // Reset any previous error states
+        form.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+            el.nextElementSibling.textContent = '';
+        });
+        
+        // Set form action
+        form.action = "{{ url('/product') }}/" + productId;
+        
+        // Fill form with product data
+        document.getElementById('edit_title').value = this.dataset.title;
+        document.getElementById('edit_price').value = this.dataset.price;
+        document.getElementById('edit_description').value = this.dataset.description;
+        
+        // Handle current image
+        const currentImage = document.querySelector('#edit_current_image img');
+        if (this.dataset.image) {
+            currentImage.src = this.dataset.image;
+            document.getElementById('edit_current_image').style.display = 'block';
+        } else {
+            document.getElementById('edit_current_image').style.display = 'none';
+        }
+        
+        // Set category if available
+        const categorySelect = document.getElementById('edit_category');
+        const category = this.dataset.category;
+        if (category) {
+            Array.from(categorySelect.options).forEach(option => {
+                if (option.value === category) {
+                    option.selected = true;
+                }
+            });
+        }
+        
+        // Show modal
+        $(modal).modal('show');
+    }
+
     apiSelector.addEventListener('change', function() {
         showLoading();
         
@@ -223,6 +278,9 @@
         .then(data => {
             const productsContainer = document.querySelector('.space-y-4');
             productsContainer.innerHTML = data.products.map(product => createProductElement(product)).join('');
+            
+            // Reattach event listeners to the new buttons
+            attachEditButtonListeners();
             
             // Refresh categories after API switch
             fetchCategories();
@@ -262,52 +320,6 @@
         `;
     }
 
-    // Handle edit button clicks
-    document.querySelectorAll('.edit-product').forEach(button => {
-        button.addEventListener('click', function() {
-            const modal = document.getElementById('editProductModal');
-            const form = document.getElementById('editProductForm');
-            const productId = this.dataset.id;
-            
-            // Reset any previous error states
-            form.querySelectorAll('.is-invalid').forEach(el => {
-                el.classList.remove('is-invalid');
-                el.nextElementSibling.textContent = '';
-            });
-            
-            // Set form action
-            form.action = "{{ url('/product') }}/" + productId;
-            
-            // Fill form with product data
-            document.getElementById('edit_title').value = this.dataset.title;
-            document.getElementById('edit_price').value = this.dataset.price;
-            document.getElementById('edit_description').value = this.dataset.description;
-            
-            // Handle current image
-            const currentImage = document.querySelector('#edit_current_image img');
-            if (this.dataset.image) {
-                currentImage.src = this.dataset.image;
-                document.getElementById('edit_current_image').style.display = 'block';
-            } else {
-                document.getElementById('edit_current_image').style.display = 'none';
-            }
-            
-            // Set category if available
-            const categorySelect = document.getElementById('edit_category');
-            const category = this.dataset.category;
-            if (category) {
-                Array.from(categorySelect.options).forEach(option => {
-                    if (option.value === category) {
-                        option.selected = true;
-                    }
-                });
-            }
-            
-            // Show modal
-            $(modal).modal('show');
-        });
-    });
-
     // Handle edit form submission
     document.getElementById('editProductForm').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -345,16 +357,32 @@
                 throw new Error(data.error);
             }
             
-            // Show success message
-            alert('Product updated successfully');
-            
-            // Close modal and refresh page
+            // Close modal
             $('#editProductModal').modal('hide');
-            location.reload();
+
+            // Show success message with SweetAlert2
+            Swal.fire({
+                title: 'Success!',
+                text: 'Product updated successfully',
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false,
+                didClose: () => {
+                    // Refresh page after alert closes
+                    location.reload();
+                }
+            });
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(error.message || 'An error occurred while updating the product');
+            
+            // Show error message with SweetAlert2
+            Swal.fire({
+                title: 'Error!',
+                text: error.message || 'An error occurred while updating the product',
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
             
             // Handle validation errors
             if (error.errors) {
@@ -376,6 +404,9 @@
             submitButton.textContent = originalText;
         });
     });
+
+    // Initial attachment of event listeners
+    attachEditButtonListeners();
 
     // Initial categories fetch
     fetchCategories().catch(error => console.error('Error fetching categories:', error));
