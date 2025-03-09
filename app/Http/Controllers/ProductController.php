@@ -92,35 +92,43 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
+        // Validate the request
         $request->validate([
-            'name' => 'required',
+            'title' => 'required|string',
             'price' => 'required|numeric',
-            'description' => 'required',
-            'category_id' => 'required',
+            'description' => 'required|string',
         ]);
 
-        $product = Product::findOrFail($id);
-        
-        $productData = $request->only(['name', 'price', 'description', 'category_id']);
-        
-        if ($request->hasFile('images')) {
-            if ($product->images && !str_contains($product->images, 'default-product.jpg')) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $product->images));
-            }
+        try {
+            // Get the data that will be updated
+            $updateData = $request->only(['title', 'price', 'description']);
             
-            $imagePath = $request->file('images')->store('products', 'public');
-            $productData['images'] = Storage::url($imagePath);
+            // Convert price to float
+            $updateData['price'] = (float) $updateData['price'];
+
+            // Get the selected API
+            $selectedApi = session('selected_api', 'platzi');
+
+            // Add category if it's FakeStore API
+            if ($selectedApi === 'fakestore' && $request->has('category')) {
+                $updateData['category'] = $request->input('category');
+            }
+
+            // Make the API call
+            $response = $this->productService->updateProduct($id, $updateData);
+            
+            // Clear the cache
+            $this->clearProductCache();
+
+            // Return the response
+            return response()->json(json_decode($response->getContent(), true));
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to update product',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $product->update($productData);
-
-        // Clear the cache after updating a product
-        $this->clearProductCache();
-
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $product
-        ]);
     }
 
     public function destroy($id)

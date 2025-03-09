@@ -35,4 +35,22 @@ class PlatziApiService implements ProductInterface
         $response = Http::get('https://api.escuelajs.co/api/v1/categories');
         return response($response->body(), $response->status());
     }
+
+    public function updateProduct($id, array $productData): Response
+    {   
+        // Format data according to Platzi API requirements
+        $data = [
+            'title' => $productData['title'] ?? null,
+            'price' => isset($productData['price']) ? (float)$productData['price'] : null,
+            'description' => $productData['description'] ?? null
+        ];
+
+        // Remove null values as Platzi API allows partial updates
+        $data = array_filter($data, function($value) {
+            return !is_null($value);
+        });
+
+        $response = Http::put("https://api.escuelajs.co/api/v1/products/{$id}", $data);
+        return response($response->body(), $response->status());
+    }
 }

@@ -31,4 +31,23 @@ class FakeStoreApiService implements ProductInterface
         $response = Http::get('https://fakestoreapi.com/products');
         return response($response->body(), $response->status());
     }
+
+    public function updateProduct($id, array $productData): Response
+    {
+        // Format data according to Fake Store API requirements
+        $data = [
+            'title' => $productData['title'] ?? null,
+            'price' => isset($productData['price']) ? (float)$productData['price'] : null,
+            'description' => $productData['description'] ?? null,
+            'category' => $productData['category'] ?? 'electronics'
+        ];
+
+        // Remove null values
+        $data = array_filter($data, function($value) {
+            return !is_null($value);
+        });
+
+        $response = Http::put("https://fakestoreapi.com/products/{$id}", $data);
+        return response($response->body(), $response->status());
+    }
 }
