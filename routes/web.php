@@ -31,6 +31,7 @@ Route::middleware(['auth', CheckAdmin::class . ':admin'])->group(function () {
   Route::post('/product', [ProductController::class, 'store'])->name('product.store');
   Route::put('/product/{id}', [ProductController::class, 'update'])->name('product.update');
   Route::post('/product/{id}', [ProductController::class, 'update'])->name('product.update');
+  Route::delete('/product/{id}', [ProductController::class, 'destroy'])->name('product.destroy');
 
   // CATEGORY CONTROLLER
   Route::get('/categories', [ApiCategoriesController::class, 'index'])->name('categories');

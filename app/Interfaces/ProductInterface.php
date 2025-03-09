@@ -10,4 +10,5 @@ interface ProductInterface
     public function addProduct(array $productData): Response;
     public function getCategories(): Response;
     public function updateProduct($id, array $productData): Response;
+    public function deleteProduct($id): Response;
 }

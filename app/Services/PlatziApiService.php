@@ -103,4 +103,10 @@ class PlatziApiService implements ProductInterface
             ], 500);
         }
     }
+
+    public function deleteProduct($id): Response
+    {
+        $response = Http::delete("https://api.escuelajs.co/api/v1/products/{$id}");
+        return response($response->body(), $response->status());
+    }
 }

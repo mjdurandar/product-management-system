@@ -156,26 +156,28 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        
-        if ($product->user_id) {
+        try {
+            // Make the API call to delete the product
+            $response = $this->productService->deleteProduct($id);
+            
+            // Clear the cache after deleting a product
+            $this->clearProductCache();
+
+            // Return the response
             return response()->json([
-                'error' => 'Cannot delete this product as it is assigned to a user'
-            ], 403);
+                'message' => 'Product deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error deleting product', [
+                'error' => $e->getMessage(),
+                'product_id' => $id
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to delete product',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        if ($product->images && !str_contains($product->images, 'default-product.jpg')) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $product->images));
-        }
-
-        $product->delete();
-
-        // Clear the cache after deleting a product
-        $this->clearProductCache();
-
-        return response()->json([
-            'message' => 'Product deleted successfully'
-        ]);
     }
 
     public function switchApi(Request $request)

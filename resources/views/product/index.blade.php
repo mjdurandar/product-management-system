@@ -43,7 +43,7 @@
                                                 data-description="{{ $product['description'] }}" 
                                                 data-image="{{ $product['image'] ?? ($product['images'][0] ?? '') }}" 
                                                 data-category="{{ isset($product['category']) ? (is_array($product['category']) ? $product['category']['id'] : $product['category']) : '' }}">Edit</button>
-                                            <button class="btn btn-danger btn-sm">Delete</button>
+                                            <button class="btn btn-danger btn-sm delete-product" data-id="{{ $product['id'] }}">Delete</button>
                                           </div>        
                                       </div>
                                   </div>
@@ -263,6 +263,122 @@
         $(modal).modal('show');
     }
 
+    // Function to attach delete button event listeners
+    function attachDeleteButtonListeners() {
+        document.querySelectorAll('.delete-product').forEach(button => {
+            // Remove existing listener to prevent duplicates
+            button.removeEventListener('click', handleDeleteButtonClick);
+            // Add new listener
+            button.addEventListener('click', handleDeleteButtonClick);
+        });
+    }
+
+    // Handler function for delete button clicks
+    function handleDeleteButtonClick() {
+        const productId = this.dataset.id;
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Show loading state
+                Swal.fire({
+                    title: 'Deleting...',
+                    html: 'Please wait...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Send delete request
+                fetch(`{{ url('/product') }}/${productId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => {
+                            try {
+                                return JSON.parse(text);
+                            } catch (e) {
+                                throw new Error('Server error occurred');
+                            }
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Show success message
+                    Swal.fire({
+                        title: 'Deleted!',
+                        text: 'Product has been deleted.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        didClose: () => {
+                            // Show loading state
+                            showLoading();
+                            
+                            // Fetch fresh data from the current API
+                            fetch("{{ route('switch-api') }}", {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ api: apiSelector.value })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                const productsContainer = document.querySelector('.space-y-4');
+                                productsContainer.innerHTML = data.products.map(product => createProductElement(product)).join('');
+                                
+                                // Reattach event listeners to the new buttons
+                                attachEditButtonListeners();
+                                attachDeleteButtonListeners();
+                                
+                                // Refresh categories
+                                fetchCategories();
+                            })
+                            .catch(error => {
+                                console.error('Error refreshing products:', error);
+                                // If refresh fails, just remove the deleted product
+                                const productElement = document.querySelector(`[data-product-id="${productId}"]`);
+                                if (productElement) {
+                                    productElement.remove();
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: error.message || 'An error occurred while deleting the product',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                });
+            }
+        });
+    }
+
     apiSelector.addEventListener('change', function() {
         showLoading();
         
@@ -281,6 +397,7 @@
             
             // Reattach event listeners to the new buttons
             attachEditButtonListeners();
+            attachDeleteButtonListeners();
             
             // Refresh categories after API switch
             fetchCategories();
@@ -311,7 +428,7 @@
                                 data-description="${product.description}" 
                                 data-image="${product.image ?? (product.images?.[0] ?? '')}" 
                                 data-category="${product.category ? (Array.isArray(product.category) ? product.category[0].id : product.category) : ''}">Edit</button>
-                            <button class="btn btn-danger btn-sm">Delete</button>
+                            <button class="btn btn-danger btn-sm delete-product" data-id="${product.id}">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -407,6 +524,7 @@
 
     // Initial attachment of event listeners
     attachEditButtonListeners();
+    attachDeleteButtonListeners();
 
     // Initial categories fetch
     fetchCategories().catch(error => console.error('Error fetching categories:', error));
