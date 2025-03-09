@@ -6,6 +6,8 @@ use App\Interfaces\ProductInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Services\PlatziApiService;
+use App\Services\FakeStoreApiService;
 
 class ProductController extends Controller
 {
@@ -18,8 +20,10 @@ class ProductController extends Controller
 
     public function index()
     {
-      $products = json_decode($this->productService->getProducts()->getContent()); 
-      return view('product.index', compact('products'));
+        $response = $this->productService->getProducts();
+        $products = json_decode($response->getContent(), true);
+        
+        return view('product.index', compact('products'));
     }
 
     public function store(Request $request)
@@ -48,5 +52,18 @@ class ProductController extends Controller
       }
       
       return $this->productService->addProduct($productData);
+    }
+
+    public function switchApi(Request $request)
+    {
+        $api = $request->input('api');
+        
+        if ($api === 'platzi') {
+            app()->bind(ProductInterface::class, PlatziApiService::class);
+        } else {
+            app()->bind(ProductInterface::class, FakeStoreApiService::class);
+        }
+
+        return response()->json(['message' => 'API switched successfully']);
     }
 }

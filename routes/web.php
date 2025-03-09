@@ -34,4 +34,6 @@ Route::middleware(['auth', CheckAdmin::class . ':admin'])->group(function () {
   Route::get('/categories', [ApiCategoriesController::class, 'index'])->name('categories');
 });
 
+Route::post('/switch-api', [ProductController::class, 'switchApi'])->name('switch-api');
+
 require __DIR__.'/auth.php';

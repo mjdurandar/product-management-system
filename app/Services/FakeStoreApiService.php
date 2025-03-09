@@ -25,4 +25,10 @@ class FakeStoreApiService implements ProductInterface
         $response = Http::get('https://fakestoreapi.com/products/categories');
         return response($response->body(), $response->status());
     }
+
+    public function getProducts(): Response
+    {
+        $response = Http::get('https://fakestoreapi.com/products?limit=5');
+        return response($response->body(), $response->status());
+    }
 }
