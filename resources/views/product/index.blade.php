@@ -42,8 +42,14 @@
                                                 data-price="{{ $product['price'] }}" 
                                                 data-description="{{ $product['description'] }}" 
                                                 data-image="{{ $product['image'] ?? ($product['images'][0] ?? '') }}" 
-                                                data-category="{{ isset($product['category']) ? (is_array($product['category']) ? $product['category']['id'] : $product['category']) : '' }}">Edit</button>
-                                            <button class="btn btn-danger btn-sm delete-product" data-id="{{ $product['id'] }}">Delete</button>
+                                                data-category="{{ isset($product['category']) ? (is_array($product['category']) ? $product['category']['id'] : $product['category']) : '' }}">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-danger btn-sm delete-product" 
+                                                    data-id="{{ $product['id'] }}"
+                                                    data-title="{{ $product['title'] }}">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
                                           </div>        
                                       </div>
                                   </div>
@@ -319,107 +325,51 @@
     // Handler function for delete button clicks
     function handleDeleteButtonClick() {
         const productId = this.dataset.id;
-        
-        Swal.fire({
+        const productTitle = this.dataset.title;
+
+        // Show confirmation dialog
+        const confirmResult = await Swal.fire({
             title: 'Are you sure?',
-            text: "You won't be able to revert this!",
+            html: `You are about to delete the product:<br><strong>${productTitle}</strong>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Show loading state
-                Swal.fire({
-                    title: 'Deleting...',
-                    html: 'Please wait...',
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
-                });
+        });
 
-                // Send delete request
-                fetch(`{{ url('/product') }}/${productId}`, {
+        if (confirmResult.isConfirmed) {
+            try {
+                const response = await fetch(`/product/${productId}`, {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     }
-                })
-                .then(response => {
-                    if (!response.ok) {
-                        return response.text().then(text => {
-                            try {
-                                return JSON.parse(text);
-                            } catch (e) {
-                                throw new Error('Server error occurred');
-                            }
-                        });
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    
-                    // Show success message
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
                     Swal.fire({
-                        title: 'Deleted!',
-                        text: 'Product has been deleted.',
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false,
-                        didClose: () => {
-                            // Show loading state
-                            showLoading();
-                            
-                            // Fetch fresh data from the current API
-                            fetch("{{ route('switch-api') }}", {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify({ api: apiSelector.value })
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                const productsContainer = document.querySelector('.space-y-4');
-                                productsContainer.innerHTML = data.products.map(product => createProductElement(product)).join('');
-                                
-                                // Reattach event listeners to the new buttons
-                                attachEditButtonListeners();
-                                attachDeleteButtonListeners();
-                                
-                                // Refresh categories
-                                fetchCategories();
-                            })
-                            .catch(error => {
-                                console.error('Error refreshing products:', error);
-                                // If refresh fails, just remove the deleted product
-                                const productElement = document.querySelector(`[data-product-id="${productId}"]`);
-                                if (productElement) {
-                                    productElement.remove();
-                                }
-                            });
-                        }
+                        title: 'Success!',
+                        text: 'Product deleted successfully',
+                        icon: 'success'
+                    }).then(() => {
+                        location.reload();
                     });
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: error.message || 'An error occurred while deleting the product',
-                        icon: 'error',
-                        confirmButtonText: 'OK'
-                    });
+                } else {
+                    throw new Error(data.message || 'Failed to delete product');
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message,
+                    icon: 'error'
                 });
             }
-        });
+        }
     }
 
     apiSelector.addEventListener('change', function() {
@@ -476,7 +426,11 @@
                                 data-description="${product.description}" 
                                 data-image="${product.image ?? (product.images?.[0] ?? '')}" 
                                 data-category="${product.category ? (Array.isArray(product.category) ? product.category[0].id : product.category) : ''}">Edit</button>
-                            <button class="btn btn-danger btn-sm delete-product" data-id="${product.id}">Delete</button>
+                            <button class="btn btn-danger btn-sm delete-product" 
+                                    data-id="${product.id}"
+                                    data-title="${product.title}">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                             </div>
                         </div>
                     </div>

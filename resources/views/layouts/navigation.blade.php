@@ -15,12 +15,14 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @if (Auth::user()->role === 'admin')
                     <x-nav-link :href="route('product.index')" :active="request()->routeIs('product.index')">
                         {{ __('Product') }}
                     </x-nav-link>
                     <x-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
                         {{ __('User') }}
                     </x-nav-link>
+                    @endif
                     <x-nav-link :href="route('available-product.index')" :active="request()->routeIs('available-product.index')">
                         {{ __('Available Products') }}
                     </x-nav-link>
@@ -79,6 +81,7 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
+            @if (Auth::user()->role === 'admin')
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
@@ -88,6 +91,7 @@
             <x-responsive-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
                 {{ __('User') }}
             </x-responsive-nav-link>
+            @endif
             <x-responsive-nav-link :href="route('available-product.index')" :active="request()->routeIs('available-product.index')">
                 {{ __('Available Products') }}
             </x-responsive-nav-link>
