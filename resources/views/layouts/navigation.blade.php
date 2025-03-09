@@ -19,15 +19,15 @@
                     <x-nav-link :href="route('product.index')" :active="request()->routeIs('product.index')">
                         {{ __('Product') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
-                        {{ __('User') }}
-                    </x-nav-link>
                     @endif
                     <x-nav-link :href="route('available-product.index')" :active="request()->routeIs('available-product.index')">
                         {{ __('Available Products') }}
                     </x-nav-link>
                     <x-nav-link :href="route('user-product.index')" :active="request()->routeIs('user-product.index')">
                         {{ __('Your Products') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('user.index')" :active="request()->routeIs('user.index')">
+                        {{ __('User') }}
                     </x-nav-link>
                 </div>
             </div>

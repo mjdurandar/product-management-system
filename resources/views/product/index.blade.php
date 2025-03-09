@@ -323,7 +323,7 @@
     }
 
     // Handler function for delete button clicks
-    function handleDeleteButtonClick() {
+    async function handleDeleteButtonClick() {
         const productId = this.dataset.id;
         const productTitle = this.dataset.title;
 
