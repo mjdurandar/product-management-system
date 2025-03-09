@@ -58,12 +58,22 @@ class ProductController extends Controller
     {
         $api = $request->input('api');
         
+        // Store the selected API in session
+        session(['selected_api' => $api]);
+        
         if ($api === 'platzi') {
             app()->bind(ProductInterface::class, PlatziApiService::class);
         } else {
             app()->bind(ProductInterface::class, FakeStoreApiService::class);
         }
 
-        return response()->json(['message' => 'API switched successfully']);
+        // Get products from the newly selected API
+        $response = app(ProductInterface::class)->getProducts();
+        $products = json_decode($response->getContent(), true);
+
+        return response()->json([
+            'message' => 'API switched successfully',
+            'products' => $products
+        ]);
     }
 }

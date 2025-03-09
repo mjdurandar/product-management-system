@@ -120,8 +120,31 @@
             body: JSON.stringify({ api: this.value })
         })
         .then(response => response.json())
-        .then(() => {
-            window.location.reload();
+        .then(data => {
+            // Update the products on the page
+            const productsContainer = document.querySelector('.space-y-4');
+            productsContainer.innerHTML = data.products.map(product => `
+                <div class="bg-white rounded-lg shadow-md p-4">
+                    <div class="flex gap-4">
+                        <div class="w-48 flex-shrink-0">
+                            <img src="${product.image ?? (product.images?.[0] ?? '')}" 
+                                 alt="${product.title ?? product.name}" 
+                                 class="w-full h-48 object-cover rounded-md">
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-semibold mb-2">${product.title ?? product.name}</h3>
+                            <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-bold">$${product.price}</span>
+                                <button class="btn btn-primary btn-sm">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Refresh categories after API switch
+            fetchCategories();
         })
         .catch(error => console.error('Error switching API:', error));
     });
