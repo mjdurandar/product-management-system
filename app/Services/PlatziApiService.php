@@ -13,10 +13,8 @@ class PlatziApiService implements ProductInterface
         $response = Http::get('https://api.escuelajs.co/api/v1/products');
         $products = json_decode($response->body(), true);
         
-        // Take only first 5 products
-        $limitedProducts = array_slice($products, 0, 5);
-        
-        return response($limitedProducts, $response->status());
+        // Remove the limit, return all products
+        return response($products, $response->status());
     }
 
     public function addProduct(array $productData): Response

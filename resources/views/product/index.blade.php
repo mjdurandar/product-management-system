@@ -20,14 +20,15 @@
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
               <div class="p-6">
-                  <div class="space-y-4">
+                  <div class="space-y-4" id="products-container">
                       @foreach($products as $product)
                           <div class="bg-white rounded-lg shadow-md p-4">
                               <div class="flex gap-4">
                                   <div class="w-48 flex-shrink-0">
-                                      <img src="{{ $product['image'] ?? ($product['images'][0] ?? '') }}" 
-                                           alt="{{ $product['title'] }}" 
-                                           class="w-full h-48 object-cover rounded-md">
+                                      <img src="{{ $product['image'] ?? ($product['images'][0] ?? asset('images/img-placeholder.jpg')) }}" 
+                                           alt="{{ $product['title'] ?? 'Product Image' }}" 
+                                           class="w-full h-48 object-cover rounded-md"
+                                           onerror="this.onerror=null; this.className+=' placeholder-image'; this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
                                   </div>
                                   <div class="flex-grow">
                                       <h3 class="text-lg font-semibold mb-2">{{ $product['title'] }}</h3>
@@ -109,8 +110,19 @@
             .catch(error => console.error('Error fetching categories:', error));
     };
 
+    const showLoading = () => {
+        const productsContainer = document.querySelector('.space-y-4');
+        productsContainer.innerHTML = `
+            <div class="flex justify-center items-center p-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            </div>
+        `;
+    };
+
     const apiSelector = document.getElementById('apiSelector');
     apiSelector.addEventListener('change', function() {
+        showLoading();
+        
         fetch("{{ route('switch-api') }}", {
             method: 'POST',
             headers: {
@@ -121,27 +133,8 @@
         })
         .then(response => response.json())
         .then(data => {
-            // Update the products on the page
             const productsContainer = document.querySelector('.space-y-4');
-            productsContainer.innerHTML = data.products.map(product => `
-                <div class="bg-white rounded-lg shadow-md p-4">
-                    <div class="flex gap-4">
-                        <div class="w-48 flex-shrink-0">
-                            <img src="${product.image ?? (product.images?.[0] ?? '')}" 
-                                 alt="${product.title ?? product.name}" 
-                                 class="w-full h-48 object-cover rounded-md">
-                        </div>
-                        <div class="flex-grow">
-                            <h3 class="text-lg font-semibold mb-2">${product.title ?? product.name}</h3>
-                            <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-lg font-bold">$${product.price}</span>
-                                <button class="btn btn-primary btn-sm">View Details</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
+            productsContainer.innerHTML = data.products.map(product => createProductElement(product)).join('');
             
             // Refresh categories after API switch
             fetchCategories();
@@ -149,8 +142,48 @@
         .catch(error => console.error('Error switching API:', error));
     });
 
+    function createProductElement(product) {
+        return `
+            <div class="bg-white rounded-lg shadow-md p-4" data-product-id="${product.id}">
+                <div class="flex gap-4">
+                    <div class="w-48 flex-shrink-0">
+                        <img src="${product.image ?? (product.images?.[0] ?? '/images/placeholder.jpg')}" 
+                             alt="${product.title ?? product.name ?? 'Product Image'}" 
+                             class="w-full h-48 object-cover rounded-md"
+                             onerror="this.onerror=null; this.className+=' placeholder-image'; this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
+                    </div>
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-semibold mb-2">${product.title ?? product.name}</h3>
+                        <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-lg font-bold">$${product.price}</span>
+                            <button class="btn btn-primary btn-sm">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     fetchCategories();
   });
 </script>
+
+<style>
+.placeholder-image {
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.placeholder-image::before {
+    content: '📷';
+    font-size: 2rem;
+    color: #9ca3af;
+}
+</style>
 
 </x-app-layout>
