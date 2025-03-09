@@ -36,7 +36,13 @@
                                       <div class="flex justify-between items-center">
                                           <span class="text-lg font-bold">${{ $product['price'] }}</span>
                                           <div>
-                                            <button class="btn btn-primary btn-sm">Edit</button>
+                                            <button class="btn btn-primary btn-sm edit-product" 
+                                                data-id="{{ $product['id'] }}" 
+                                                data-title="{{ $product['title'] }}" 
+                                                data-price="{{ $product['price'] }}" 
+                                                data-description="{{ $product['description'] }}" 
+                                                data-image="{{ $product['image'] ?? ($product['images'][0] ?? '') }}" 
+                                                data-category="{{ isset($product['category']) ? (is_array($product['category']) ? $product['category']['id'] : $product['category']) : '' }}">Edit</button>
                                             <button class="btn btn-danger btn-sm">Delete</button>
                                           </div>        
                                       </div>
@@ -89,6 +95,61 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Edit Product</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editProductForm" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="edit_title">Product Title</label>
+                        <input type="text" class="form-control" id="edit_title" name="title" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_price">Price</label>
+                        <input type="number" class="form-control" id="edit_price" name="price" step="0.01" min="0" required>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_description">Description</label>
+                        <textarea class="form-control" id="edit_description" name="description" required></textarea>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_category">Category</label>
+                        <select class="form-control" id="edit_category" name="categoryId">
+                            <option value="">Select a category</option>
+                        </select>
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_images">New Image (optional)</label>
+                        <input type="file" class="form-control" id="edit_images" name="images[]" accept="image/*">
+                        <div class="invalid-feedback"></div>
+                    </div>
+                    <div id="edit_current_image" class="mt-2">
+                        <label>Current Image:</label>
+                        <img src="" alt="Current product image" class="img-thumbnail" style="max-height: 100px;">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update Product</button>
                 </div>
             </form>
         </div>
@@ -160,7 +221,13 @@
                         <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-bold">$${product.price}</span>
-                            <button class="btn btn-primary btn-sm">Edit</button>
+                            <button class="btn btn-primary btn-sm edit-product" 
+                                data-id="${product.id}" 
+                                data-title="${product.title}" 
+                                data-price="${product.price}" 
+                                data-description="${product.description}" 
+                                data-image="${product.image ?? (product.images?.[0] ?? '')}" 
+                                data-category="${product.category ? (Array.isArray(product.category) ? product.category[0].id : product.category) : ''}">Edit</button>
                             <button class="btn btn-danger btn-sm">Delete</button>
                         </div>
                     </div>
@@ -168,6 +235,138 @@
             </div>
         `;
     }
+
+    // Handle edit button clicks
+    document.querySelectorAll('.edit-product').forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = document.getElementById('editProductModal');
+            const form = document.getElementById('editProductForm');
+            const productId = this.dataset.id;
+            
+            // Reset any previous error states
+            form.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+                el.nextElementSibling.textContent = '';
+            });
+            
+            // Set form action
+            form.action = "{{ url('/product') }}/" + productId;
+            
+            // Fill form with product data
+            document.getElementById('edit_title').value = this.dataset.title;
+            document.getElementById('edit_price').value = this.dataset.price;
+            document.getElementById('edit_description').value = this.dataset.description;
+            
+            // Handle current image
+            const currentImage = document.querySelector('#edit_current_image img');
+            if (this.dataset.image) {
+                currentImage.src = this.dataset.image;
+                document.getElementById('edit_current_image').style.display = 'block';
+            } else {
+                document.getElementById('edit_current_image').style.display = 'none';
+            }
+            
+            // Set category if available
+            const categorySelect = document.getElementById('edit_category');
+            const category = this.dataset.category;
+            if (category) {
+                Array.from(categorySelect.options).forEach(option => {
+                    if (option.value === category) {
+                        option.selected = true;
+                    }
+                });
+            }
+            
+            // Show modal
+            $(modal).modal('show');
+        });
+    });
+
+    // Handle edit form submission
+    document.getElementById('editProductForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const url = this.action;
+        
+        // Show loading state
+        const submitButton = this.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.disabled = true;
+        submitButton.textContent = 'Updating...';
+        
+        fetch(url, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error('Server error occurred');
+                    }
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Show success message
+            alert('Product updated successfully');
+            
+            // Close modal and refresh page
+            $('#editProductModal').modal('hide');
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(error.message || 'An error occurred while updating the product');
+            
+            // Handle validation errors
+            if (error.errors) {
+                Object.keys(error.errors).forEach(field => {
+                    const input = this.querySelector(`[name="${field}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = error.errors[field][0];
+                        }
+                    }
+                });
+            }
+        })
+        .finally(() => {
+            // Reset button state
+            submitButton.disabled = false;
+            submitButton.textContent = originalText;
+        });
+    });
+
+    // Copy categories to edit modal's select
+    function updateEditCategories() {
+        const categories = Array.from(document.getElementById('categorySelect').options);
+        const editCategorySelect = document.getElementById('edit_category');
+        editCategorySelect.innerHTML = categories.map(opt => 
+            `<option value="${opt.value}">${opt.textContent}</option>`
+        ).join('');
+    }
+
+    // Update edit categories when main categories are loaded
+    const originalFetchCategories = fetchCategories;
+    fetchCategories = () => {
+        originalFetchCategories().then(() => {
+            updateEditCategories();
+        });
+    };
 
     fetchCategories();
   });
