@@ -29,6 +29,8 @@ Route::middleware(['auth', CheckAdmin::class . ':admin'])->group(function () {
   // PRODUCT CONTROLLER
   Route::get('/product', [ProductController::class, 'index'])->name('product.index');
   Route::post('/product', [ProductController::class, 'store'])->name('product.store');
+  Route::put('/product/{id}', [ProductController::class, 'update'])->name('product.update');
+  Route::post('/product/{id}', [ProductController::class, 'update'])->name('product.update');
 
   // CATEGORY CONTROLLER
   Route::get('/categories', [ApiCategoriesController::class, 'index'])->name('categories');
