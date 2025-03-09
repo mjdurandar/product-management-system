@@ -168,34 +168,34 @@
         fetchCategories();
     });
 
-    const fetchCategories = () => {
-        fetch("{{ route('categories') }}") 
-            .then(response => response.json())
-            .then(data => {
-                // Update Add Product modal dropdown
-                let categorySelect = document.getElementById('categorySelect');
-                let editCategorySelect = document.getElementById('edit_category');
-                
-                // Clear both dropdowns
-                categorySelect.innerHTML = '<option value="">Select a category</option>';
-                editCategorySelect.innerHTML = '<option value="">Select a category</option>';
-                
-                // Add categories to both dropdowns
-                data.forEach(category => {
-                    // For Add Product modal
-                    let option = document.createElement('option');
-                    option.value = category.id; 
-                    option.textContent = category.name || category; 
-                    categorySelect.appendChild(option);
-                    
-                    // For Edit Product modal
-                    let editOption = document.createElement('option');
-                    editOption.value = category.id;
-                    editOption.textContent = category.name || category;
-                    editCategorySelect.appendChild(editOption);
-                });
-            })
-            .catch(error => console.error('Error fetching categories:', error));
+    let fetchCategories = async () => {
+        const response = await fetch("{{ route('categories') }}");
+        const data = await response.json();
+        
+        // Update Add Product modal dropdown
+        let categorySelect = document.getElementById('categorySelect');
+        let editCategorySelect = document.getElementById('edit_category');
+        
+        // Clear both dropdowns
+        categorySelect.innerHTML = '<option value="">Select a category</option>';
+        editCategorySelect.innerHTML = '<option value="">Select a category</option>';
+        
+        // Add categories to both dropdowns
+        data.forEach(category => {
+            // For Add Product modal
+            let option = document.createElement('option');
+            option.value = category.id; 
+            option.textContent = category.name || category; 
+            categorySelect.appendChild(option);
+            
+            // For Edit Product modal
+            let editOption = document.createElement('option');
+            editOption.value = category.id;
+            editOption.textContent = category.name || category;
+            editCategorySelect.appendChild(editOption);
+        });
+
+        return data;
     };
 
     const showLoading = () => {
@@ -377,24 +377,8 @@
         });
     });
 
-    // Copy categories to edit modal's select
-    function updateEditCategories() {
-        const categories = Array.from(document.getElementById('categorySelect').options);
-        const editCategorySelect = document.getElementById('edit_category');
-        editCategorySelect.innerHTML = categories.map(opt => 
-            `<option value="${opt.value}">${opt.textContent}</option>`
-        ).join('');
-    }
-
-    // Update edit categories when main categories are loaded
-    const originalFetchCategories = fetchCategories;
-    fetchCategories = () => {
-        originalFetchCategories().then(() => {
-            updateEditCategories();
-        });
-    };
-
-    fetchCategories();
+    // Initial categories fetch
+    fetchCategories().catch(error => console.error('Error fetching categories:', error));
   });
 </script>
 
