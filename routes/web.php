@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Middleware\CheckAdmin;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\AvailableProductController;
 
 Route::get('/', function () {
     return redirect('login');
@@ -16,8 +18,12 @@ Route::get('/dashboard', function () {
 
 Route::middleware(['auth', CheckAdmin::class . ':admin,user'])->group(function () {
     // USER CONTROLLER
-    Route::get('/user', [App\Http\Controllers\UserController::class, 'index'])->name('user.index');
-    Route::patch('/user/{id}', [App\Http\Controllers\UserController::class, 'update'])->name('user.update');
+    Route::get('/user', [UserController::class, 'index'])->name('user.index');
+    Route::patch('/user/{id}', [UserController::class, 'update'])->name('user.update');
+
+    // AVAILABLE PRODUCTS
+    Route::get('/available-products', [AvailableProductController::class, 'index'])->name('available-product.index');
+    Route::post('/available-products/{id}/claim', [AvailableProductController::class, 'claimProduct'])->name('available-product.claim');
 
     // BUILT IN PROFILE CONTROLLER FROM LARAVEL BREEZE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
