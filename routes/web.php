@@ -7,6 +7,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Middleware\CheckAdmin;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AvailableProductController;
+use App\Http\Controllers\UserProductController;
 
 Route::get('/', function () {
     return redirect('login');
@@ -24,6 +25,9 @@ Route::middleware(['auth', CheckAdmin::class . ':admin,user'])->group(function (
     // AVAILABLE PRODUCTS
     Route::get('/available-products', [AvailableProductController::class, 'index'])->name('available-product.index');
     Route::post('/available-products/{id}/claim', [AvailableProductController::class, 'claimProduct'])->name('available-product.claim');
+
+    // USER PRODUCTS
+    Route::get('/your-products', [UserProductController::class, 'index'])->name('user-product.index');
 
     // BUILT IN PROFILE CONTROLLER FROM LARAVEL BREEZE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

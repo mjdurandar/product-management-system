@@ -28,26 +28,19 @@
             @include('layouts.navigation')
 
             <!-- Page Heading -->
-            @isset($header)
+            @if (isset($header))
                 <header class="bg-white shadow">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>
-            @endisset
+            @endif
 
             <!-- Page Content -->
             <main>
                 {{ $slot }}
             </main>
         </div>
-
-        <!-- Bootstrap JS and dependencies -->
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-        <!-- SweetAlert JS -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        @stack('scripts')
     </body>
 </html>
