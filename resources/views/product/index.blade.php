@@ -24,18 +24,21 @@
                       @foreach($products as $product)
                           <div class="bg-white rounded-lg shadow-md p-4">
                               <div class="flex gap-4">
-                                  <div class="w-48 flex-shrink-0">
-                                      <img src="{{ $product['image'] ?? ($product['images'][0] ?? asset('images/img-placeholder.jpg')) }}" 
-                                           alt="{{ $product['title'] ?? 'Product Image' }}" 
-                                           class="w-full h-48 object-cover rounded-md"
-                                           onerror="this.onerror=null; this.className+=' placeholder-image'; this.src='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';">
-                                  </div>
+                              <div class="w-48 flex-shrink-0">
+                                <img src="{{ $product['image'] ?? ($product['images'][0] ?? asset('images/img-placeholder.jpg')) }}" 
+                                        alt="{{ $product['title'] ?? 'Product Image' }}" 
+                                        class="w-full h-48 object-cover rounded-md"
+                                        onerror="this.onerror=null; this.src='{{ asset('images/img-placeholder.jpg') }}';">
+                                </div>
                                   <div class="flex-grow">
                                       <h3 class="text-lg font-semibold mb-2">{{ $product['title'] }}</h3>
                                       <p class="text-gray-600 mb-4">{{ \Str::limit($product['description'], 200) }}</p>
                                       <div class="flex justify-between items-center">
                                           <span class="text-lg font-bold">${{ $product['price'] }}</span>
-                                          <button class="btn btn-primary btn-sm">View Details</button>
+                                          <div>
+                                            <button class="btn btn-primary btn-sm">Edit</button>
+                                            <button class="btn btn-danger btn-sm">Delete</button>
+                                          </div>        
                                       </div>
                                   </div>
                               </div>
@@ -157,7 +160,8 @@
                         <p class="text-gray-600 mb-4">${product.description.slice(0, 200)}...</p>
                         <div class="flex justify-between items-center">
                             <span class="text-lg font-bold">$${product.price}</span>
-                            <button class="btn btn-primary btn-sm">View Details</button>
+                            <button class="btn btn-primary btn-sm">Edit</button>
+                            <button class="btn btn-danger btn-sm">Delete</button>
                         </div>
                     </div>
                 </div>
