@@ -81,7 +81,7 @@
                         <label for="description">Description</label>
                         <textarea class="form-control" id="description" name="description" required></textarea>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="add-category-container">
                         <label for="category">Category</label>
                         <select class="form-control" id="categorySelect" name="category_id">
                             <option value="">Select a category</option>
@@ -130,7 +130,7 @@
                         <textarea class="form-control" id="edit_description" name="description" required></textarea>
                         <div class="invalid-feedback"></div>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" id="edit-category-container">
                         <label for="edit_category">Category</label>
                         <select class="form-control" id="edit_category" name="categoryId">
                             <option value="">Select a category</option>
@@ -209,6 +209,47 @@
 
     const apiSelector = document.getElementById('apiSelector');
     
+    // Function to toggle category field type
+    function toggleCategoryField(api) {
+        const addCategoryContainer = document.querySelector('#add-category-container');
+        const editCategoryContainer = document.querySelector('#edit-category-container');
+        
+        if (api === 'fakestore') {
+            // For Add Product Modal
+            addCategoryContainer.innerHTML = `
+                <label for="category">Category</label>
+                <input type="text" class="form-control" id="categoryInput" name="category" placeholder="Enter category">
+            `;
+            
+            // For Edit Product Modal
+            editCategoryContainer.innerHTML = `
+                <label for="edit_category">Category</label>
+                <input type="text" class="form-control" id="edit_category" name="category" placeholder="Enter category">
+                <div class="invalid-feedback"></div>
+            `;
+        } else {
+            // For Add Product Modal
+            addCategoryContainer.innerHTML = `
+                <label for="category">Category</label>
+                <select class="form-control" id="categorySelect" name="category_id">
+                    <option value="">Select a category</option>
+                </select>
+            `;
+            
+            // For Edit Product Modal
+            editCategoryContainer.innerHTML = `
+                <label for="edit_category">Category</label>
+                <select class="form-control" id="edit_category" name="categoryId">
+                    <option value="">Select a category</option>
+                </select>
+                <div class="invalid-feedback"></div>
+            `;
+            
+            // Fetch categories for Platzi API
+            fetchCategories();
+        }
+    }
+
     // Function to attach edit button event listeners
     function attachEditButtonListeners() {
         document.querySelectorAll('.edit-product').forEach(button => {
@@ -248,11 +289,13 @@
             document.getElementById('edit_current_image').style.display = 'none';
         }
         
-        // Set category if available
-        const categorySelect = document.getElementById('edit_category');
+        // Set category based on API type
         const category = this.dataset.category;
-        if (category) {
-            Array.from(categorySelect.options).forEach(option => {
+        const categoryField = document.getElementById('edit_category');
+        if (apiSelector.value === 'fakestore') {
+            categoryField.value = category;
+        } else {
+            Array.from(categoryField.options).forEach(option => {
                 if (option.value === category) {
                     option.selected = true;
                 }
@@ -382,6 +425,9 @@
     apiSelector.addEventListener('change', function() {
         showLoading();
         
+        // Toggle category field type
+        toggleCategoryField(this.value);
+        
         fetch("{{ route('switch-api') }}", {
             method: 'POST',
             headers: {
@@ -399,8 +445,10 @@
             attachEditButtonListeners();
             attachDeleteButtonListeners();
             
-            // Refresh categories after API switch
-            fetchCategories();
+            // Only fetch categories for Platzi API
+            if (this.value === 'platzi') {
+                fetchCategories();
+            }
         })
         .catch(error => console.error('Error switching API:', error));
     });
@@ -526,8 +574,8 @@
     attachEditButtonListeners();
     attachDeleteButtonListeners();
 
-    // Initial categories fetch
-    fetchCategories().catch(error => console.error('Error fetching categories:', error));
+    // Initial setup
+    toggleCategoryField(apiSelector.value);
   });
 </script>
 
